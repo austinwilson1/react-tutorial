@@ -1,54 +1,54 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import Box from '@material-ui/core/Box';
-import Container from '@material-ui/core/Container'
-import Button from '@material-ui/core/Button'
+import Container from '@material-ui/core/Container';
+import Button from '@material-ui/core/Button';
 import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemText from '@material-ui/core/ListItemText';
 import Typography from '@material-ui/core/Typography';
 import './index.css';
 
-
 const styles = {
   gridButtons: {
-    fontSize: "7rem",
-    fontWeight: "bold",
+    fontSize: '7rem',
+    fontWeight: 'bold',
   },
   listButtons: {
-    textTransform: "capitalize",
+    textTransform: 'capitalize',
+  },
+};
+
+function calculateWinner(squares) {
+  const lines = [
+    [0, 1, 2],
+    [3, 4, 5],
+    [6, 7, 8],
+    [0, 3, 6],
+    [1, 4, 7],
+    [2, 5, 8],
+    [0, 4, 8],
+    [2, 4, 6],
+  ];
+  for (let i = 0; i < lines.length; i++) {
+    const [a, b, c] = lines[i];
+    if (squares[a] && squares[a] === squares[b] && squares[a] === squares[c]) {
+      return { winner: squares[a], winningSquares: lines[i] };
+    }
   }
+  return { winner: null, winningSquares: null };
 }
 
 function Square(props) {
+  const { className, onClick, disabled, value } = props;
   return (
-    <Button variant="outlined" style={styles.gridButtons} className={props.className} onClick={props.onClick} disabled={props.disabled}>
-      {props.value}
+    <Button variant="outlined" style={styles.gridButtons} className={className} onClick={onClick} disabled={disabled}>
+      {value}
     </Button>
   );
 }
 
 class Board extends React.Component {
-  renderSquare(i) {
-    let className = 'square'
-    let disabled = false
-    if (this.props.winningSquares) {
-      disabled = true
-      if (this.props.winningSquares.includes(i)) {
-        className += ' highlighted'
-      }
-    }
-    return (
-      <Square
-        key={i}
-        value={this.props.squares[i]}
-        onClick={() => this.props.onClick(i)}
-        className={className}
-        disabled={disabled}
-      />
-    );
-  }
-
   createBoard() {
     const board = [];
     let i = 0;
@@ -61,6 +61,27 @@ class Board extends React.Component {
       board.push(<div className="board-row" key={i}>{row}</div>);
     }
     return board;
+  }
+
+  renderSquare(i) {
+    const { squares, onClick, winningSquares } = this.props;
+    let className = 'square';
+    let disabled = false;
+    if (winningSquares) {
+      disabled = true;
+      if (winningSquares.includes(i)) {
+        className += ' highlighted';
+      }
+    }
+    return (
+      <Square
+        key={i}
+        value={squares[i]}
+        onClick={() => onClick(i)}
+        className={className}
+        disabled={disabled}
+      />
+    );
   }
 
   render() {
@@ -94,9 +115,9 @@ class Game extends React.Component {
     if (this.state.winner || squares[i] || this.state.turnNumber === 9) {
       return;
     }
-    squares[i] = this.players[this.state.turnNumber % this.players.length];
+    squares[i] = this.players[(this.state.turnNumber % this.players.length)];
     const { winner, winningSquares } = calculateWinner(squares);
-    const move = { player: squares[i], col: (i % 3 + 1), row: (Math.floor(i / 3) + 1) };
+    const move = { player: squares[i], col: ((i%3)+1), row: (Math.floor(i/3)+1) };
     this.setState({
       history: history.concat([{
         squares,
@@ -120,9 +141,9 @@ class Game extends React.Component {
 
   getMoves(history) {
     if (history.length === 1) {
-      return null
+      return null;
     }
-    let moves = history.map((step, move) => {
+    const moves = history.map((step, move) => {
       let desc;
       let moveDesc;
       if (move) {
@@ -143,8 +164,14 @@ class Game extends React.Component {
         moveDesc = '';
       }
       return (
-        <ListItem key={move} button onClick={() => this.jumpTo(move)} selected={(this.state.turnNumber === move)} style={styles.listItems}>
-          <ListItemText primary={desc} secondary={moveDesc}></ListItemText>
+        <ListItem 
+          key={desc}
+          button
+          onClick={() => this.jumpTo(move)}
+          selected={(this.state.turnNumber === move)}
+          style={styles.listItems}
+        >
+          <ListItemText primary={desc} secondary={moveDesc}/>
         </ListItem>
       );
     });
@@ -169,7 +196,7 @@ class Game extends React.Component {
     const moves = this.getMoves(history);
     const status = this.getStatus();
     return (
-      <Container maxWidth='md'>
+      <Container maxWidth="md">
         <Typography variant="h3" gutterBottom>Tic-tac-toe</Typography>
         <Box display="flex" flexDirection="row" flexWrap="wrap">
           <Box mr={8}>
@@ -187,26 +214,6 @@ class Game extends React.Component {
       </Container>
     );
   }
-}
-
-function calculateWinner(squares) {
-  const lines = [
-    [0, 1, 2],
-    [3, 4, 5],
-    [6, 7, 8],
-    [0, 3, 6],
-    [1, 4, 7],
-    [2, 5, 8],
-    [0, 4, 8],
-    [2, 4, 6],
-  ];
-  for (let i = 0; i < lines.length; i++) {
-    const [a, b, c] = lines[i];
-    if (squares[a] && squares[a] === squares[b] && squares[a] === squares[c]) {
-      return { winner: squares[a], winningSquares: lines[i] };
-    }
-  }
-  return { winner: null, winningSquares: null };
 }
 
 // ========================================
